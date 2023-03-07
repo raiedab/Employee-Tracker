@@ -1,31 +1,193 @@
-DROP DATABASE IF EXISTS employeeTracker_db;
-CREATE DATABASE employeeTracker_db;
+const mysql = require('mysql2');
+const inquirer = require('inquirer');
+const consoleTable = require('console.table');
+require('dotenv').config();
 
-USE employeeTracker_db;
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: process.env.password,
+    database: 'tracker_db'
+  },
+  console.log(`Connected to the tracker_db database.`));
 
-CREATE TABLE department (
-department_id INT AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(30)
-);
+  function start() {
+  inquirer.prompt([{
+        type: 'list',
+        message: 'Make a selection',
+        name: 'main_directory',
+        choices: [
+          'Add an Employee',
+          'Add a Role',
+          'Add a Department',
+          'View All Employees',
+          'View All Roles',
+          'View All Departments',
+        ]
+      },
+    ])
+    .then((response) => {
+      switch (response.main_directory) {
+        case 'View All Departments':
+          viewDepartment();
+          break;
+        case 'View All Employees':
+          viewEmployees();
+          break;
+        case 'View All Roles':
+          viewEmployeeRoles();
+          break;
+        case 'Add a Department':
+          addDepartment();
+          break;
+        case 'Add a Role':
+          addRoles();
+          break;  
+        case 'Add an Employee':
+          addEmployee();
+        case 'Update employee role':
+          updateEmployee();
+          break;         
+      }
+    })
+};
 
-CREATE TABLE employeeRole (
-role_id INT AUTO_INCREMENT PRIMARY KEY, 
-title VARCHAR(30),
-salary DECIMAL,
-department_id INT
-FOREIGN KEY (department_id)
-REFERENCES department(department_id)
-);
 
-CREATE TABLE employee (
-employee_id INT AUTO_INCREMENT PRIMARY KEY,
-first_name VARCHAR (30),
-last_name VARCHAR (30),
-manager_id INT,
-role_id INT,
-FOREIGN KEY (role_id)
-REFERENCES employeeRole(role_id),
-FOREIGN KEY (manager_id)
-REFERENCES employee(employee_id)
+const viewDepartment = () => {
+  connection.query('SELECT * FROM department', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
 
+const viewEmployeeRoles = () => {
+  connection.query('SELECT * FROM employeeRoles', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
 
+const viewEmployees = () => {
+  connection.query(
+    'SELECT employee.id, first_name, last_name, title, salary, department_id, manager_id FROM ((department JOIN employeeRoles ON department.id = employeeRoles.department_id) JOIN employee ON employeeRoles.id = employee.role_id);',
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      start();
+    }
+  );
+};
+
+const addDepartment = () => {
+  inquirer.prompt([
+    {
+      name: 'department',
+      type: 'input',
+      message: 'What is the department name?',
+    },
+  ]).then(answer => {
+    connection.query(
+      'INSERT INTO department (name) VALUES (?)',
+      [answer.department],
+      (err, res) => {
+        if (err) throw err;
+        console.log('Department added!');
+        start();
+      }
+    );
+  });
+};
+
+const addRoles = () => {
+  inquirer.prompt([
+    {
+      name: 'employeeRolesTitle',
+      type: 'input',
+      message: 'What is the roles title?',
+    },
+    {
+      name: 'salary',
+      type: 'input',
+      message: 'What is the salary for this role?',
+    },
+    {
+      name: 'department_nameId',
+      type: 'input',
+      message: 'What is the department ID number?',
+    },
+  ]).then(answer => {
+    connection.query(
+      'INSERT INTO employeeRoles (title, salary, department_id) VALUES (?, ?, ?)',
+      [answer.rolesTitle, answer.salary, answer.deptId],
+      (err, res) => {
+        if (err) throw err;
+        console.log('Roles added!');
+        start();
+      }
+    );
+  });
+};
+
+const addEmployee = () => {
+  inquirer.prompt([
+    {
+      name: 'nameFirst',
+      type: 'input',
+      message: "What is the employee's first name?",
+    },
+    {
+      name: 'nameLast',
+      type: 'input',
+      message: "What is the employee's last name?",
+    },
+    {
+      name: 'rolesId',
+      type: 'input',
+      message: "What is the employee's role id?",
+    },
+    {
+      name: 'managerId',
+      type: 'input',
+      message: 'What is the manager Id?',
+    },
+  ]).then(answer => {
+    connection.query(
+      'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)',
+      [answer.nameFirst, answer.nameLast, answer.rolesId, answer.managerId],
+      (err, res) => {
+        if (err) throw err;
+        console.log('Employee added!');
+        start();
+      }
+    );
+  });
+};
+
+const updateEmployee = () => {
+  inquirer.prompt([
+    {
+      name: 'id',
+      type: 'input',
+      message: 'Enter employee id',
+    },
+    {
+      name: 'employeeRolesId',
+      type: 'input',
+      message: 'Enter new employee_roles id',
+    },
+  ]).then(answer => {
+    connection.query(
+      'UPDATE employee SET employee_role_id=? WHERE id=?',
+      [answer.rolesId, answer.id],
+      function (err, res) {
+        if (err) throw err;
+        console.log('Employee updated!');
+        start();
+      }
+    );
+  });
+};
+
+start();
