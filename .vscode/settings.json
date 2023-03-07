@@ -1,0 +1,45 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3000,
+            "askForPassword": true,
+            "driver": "MySQL",
+            "name": "tracker_db",
+            "database": "tracker_db",
+            "username": "root"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3000,
+            "driver": "MySQL",
+            "password": "Amani!630",
+            "name": "tracker",
+            "database": "tracker_db",
+            "username": "root"
+        },
+        {
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MSSQL",
+            "name": "tracker-db",
+            "database": "tracker_db",
+            "username": "root",
+            "password": "Amani!630"
+        }
+    ]
+}
