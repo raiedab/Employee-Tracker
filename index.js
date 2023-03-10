@@ -5,11 +5,11 @@ require('dotenv').config();
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    port: '3306',
     user: 'root',
-    password: process.env.password,
+    password: 'Amani!630',
     database: 'tracker_db'
   },
+
   console.log(`Connected to the tracker_db database.`));
 
   function start() {
@@ -33,7 +33,7 @@ const connection = mysql.createConnection({
           viewDepartment();
           break;
         case 'View All Employees':
-          viewEmployees();
+          viewEmployee();
           break;
         case 'View All Roles':
           viewEmployeeRoles();
@@ -63,23 +63,25 @@ const viewDepartment = () => {
 };
 
 const viewEmployeeRoles = () => {
-  connection.query('SELECT * FROM employeeRoles', (err, res) => {
+  connection.query('SELECT * FROM roles', (err, res) => {
     if (err) throw err;
     console.table(res);
     start();
   });
-};
+}
 
-const viewEmployees = () => {
-  connection.query(
-    'SELECT employee.id, first_name, last_name, title, salary, department_id, manager_id FROM ((department JOIN employeeRoles ON department.id = employeeRoles.department_id) JOIN employee ON employeeRoles.id = employee.role_id);',
-    (err, res) => {
-      if (err) throw err;
+const viewEmployee = () => {
+  console.log("Viewing all employees...");
+  connection.query( 'SELECT * FROM employee', (err, res) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
       console.table(res);
       start();
-    }
-  );
+    });
 };
+
 
 const addDepartment = () => {
   inquirer.prompt([
@@ -174,9 +176,9 @@ const updateEmployee = () => {
       message: 'Enter employee id',
     },
     {
-      name: 'employeeRolesId',
+      name: 'rolesId',
       type: 'input',
-      message: 'Enter new employee_roles id',
+      message: 'Enter new employees role id',
     },
   ]).then(answer => {
     connection.query(
@@ -190,5 +192,6 @@ const updateEmployee = () => {
     );
   });
 };
+
 
 start();
